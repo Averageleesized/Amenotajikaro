@@ -6,11 +6,61 @@ const ERROR_IMG_SRC =
 export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   const [didError, setDidError] = useState(false)
 
+  const {
+    src,
+    alt,
+    style,
+    className,
+    width,
+    height,
+    ...rest
+  } = props
+
+  const fallbackStyle = useMemo<React.CSSProperties>(() => {
+    const resolvedStyle: React.CSSProperties = {
+      backgroundColor: 'var(--card)',
+      color: 'var(--foreground)',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--radius)',
+      overflow: 'hidden',
+      ...style,
+    }
+
+    if (width !== undefined) {
+      resolvedStyle.width = typeof width === 'number' ? `${width}px` : width
+    }
+
+    if (height !== undefined) {
+      resolvedStyle.height = typeof height === 'number' ? `${height}px` : height
+    }
+
+    return resolvedStyle
+  }, [style, width, height])
+
   const handleError = () => {
     setDidError(true)
   }
 
-  const { src, alt, style, className, ...rest } = props
+  if (didError) {
+    return (
+      <div className={cn(className)} style={fallbackStyle}>
+        <span className="sr-only">Error loading image</span>
+        <img
+          src={ERROR_IMG_SRC}
+          alt=""
+          aria-hidden="true"
+          data-original-url={src}
+          {...rest}
+          style={{
+            maxWidth: '60%',
+            maxHeight: '60%',
+          }}
+        />
+      </div>
+    )
+  }
 
   const fallbackStyle = useMemo<React.CSSProperties>(() => ({
     backgroundColor: 'var(--card)',
